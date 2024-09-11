@@ -24,6 +24,7 @@ def create_prompt_string(line_count: int):
     return f"{pre_linecount_string}{line_count}> "
 
 def main():
+    print("   | The last result can be accessed with the variable 'r'.\n   | Type 'quit' to exit the program.")
     exp_eval = ExpressionEval()
     line_count = 1
     cur_input = ""
@@ -44,10 +45,16 @@ def main():
 
         # if the current input is a normal mathematical expression to evaluate
         else:
+            var_to_write_to = "r"
+            if "=" in cur_input:
+                temp = cur_input.split("=")
+                var_to_write_to = temp[0]
+                cur_input = temp[1]
+
             result = exp_eval.solve(cur_input)
             state.result_history.append(result)
-            state.user_vars["r"] = str(result)
-            print(f"r = {result}")
+            state.user_vars[var_to_write_to] = str(result)
+            print(f"   | {result}")
 
         line_count += 1
 

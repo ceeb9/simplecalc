@@ -55,7 +55,7 @@ class ExpressionEval():
             tokens.append(cur_token)
             cur_token = ""
     
-        for token in tokens: print(f"type: {type(token)} | token: {token}")
+        #for token in tokens: print(f"type: {type(token)} | token: {token}")
     
         return tokens
             
