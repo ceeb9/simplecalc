@@ -1,10 +1,11 @@
 from typing import Callable
 import operator
 import sys
+import state
 from collections import deque
 
-# todo
-# make all references to operators go through a class instance of Operator
+#        todo
+# resolve variables when evaluating
 
 class Operation():
     def __init__(self, opstring: str, op_count: int, priority: int, function: Callable):
@@ -45,8 +46,8 @@ class ExpressionEval():
                 # add the operator
                 tokens.append(char)
     
-            # add digit to accumulated term
-            elif char.isdigit() or char == '.':
+            # add char to accumulated term
+            else:
                 cur_token += char
     
         # add the last number to the array of terms
@@ -92,14 +93,21 @@ class ExpressionEval():
             #print(cur)
             postfix_queue.append(cur)
     
-        print(postfix_queue)
         return postfix_queue
+
+    def resolve_variables(self, tokens: deque[str]) -> deque[str]:
+        """takes in a deque of tokens, checks for variables and replaces them with their values, returning the same deque with replaced values"""
+        for i in range(len(tokens)):
+            if tokens[i] in state.user_vars:
+                tokens[i] = state.user_vars[tokens[i]]
+        return tokens
     
-    def evaluate_postfix(self, postfix_queue: deque) -> float:
-        """takes in a queue of tokens in postfix order, where each token is an operator or operand, and evaluates the result"""
+    def evaluate_postfix(self, token_queue: deque) -> float:
+        """takes in a queue of tokens in postfix order, where each token is an operator, operand, or variable, and evaluates the result"""
+        token_queue = self.resolve_variables(token_queue)
         stack = deque()
-        while len(postfix_queue) > 0:
-            cur_token = postfix_queue.popleft()
+        while len(token_queue) > 0:
+            cur_token = token_queue.popleft()
     
             # evaluate last two operands when operator is encountered
             if cur_token in ExpressionEval.opstring_list:
