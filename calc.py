@@ -1,23 +1,12 @@
+import readline
 import math
 from enum import Enum
+
+from expression_eval import ExpressionEval
 
 class Action(Enum):
     QUIT = 1
     SET = 2
-
-def expand_aliases(input_string: str) -> str:
-    aliases = [
-        ("^", "**"),
-        ("pi", "math.pi"),
-        ("sin", "math.sin"),
-        ("cos", "math.cos"),
-        ("tan", "math.tan"),
-    ]
-    for f, r in aliases: input_string = input_string.replace(f, r)
-    return input_string
-
-def parse_expression_string(input_string: str) -> str:
-    return expand_aliases(input_string)
 
 def is_expression_string(input_string: str):
     result = True
@@ -34,21 +23,27 @@ def create_prompt_string(line_count: int, prev_result: str):
     return f"{pre_linecount_string}{line_count}> {prev_result}"
 
 def main():
+    exp_eval = ExpressionEval()
     line_count = 1
     cur_input = ""
     result_string = ""
 
     while 1:
-        cur_input = input(create_prompt_string(line_count, result_string)).strip()
+        prompt_string = create_prompt_string(line_count, result_string)
+        cur_input = input(prompt_string).strip()
+
+        # special actions etc.
+        # future work, not concerned with for now.
         if not is_expression_string(cur_input):
             cur_input_args = cur_input.split(' ')
             command = Action[cur_input_args[0].upper()]
 
             if command == Action.QUIT:
                 break
+
+        # if the current input is a normal mathematical expression to evaluate
         else:
-            cur_input = parse_expression_string(result_string + cur_input)
-            result = eval(cur_input)
+            result = exp_eval.solve(cur_input)
             result_string = str(result)
             print(result)
 
