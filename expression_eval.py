@@ -24,13 +24,13 @@ class ExpressionEval():
         Operation("*", 2, 2, False, operator.mul),
         Operation("/", 2, 2, False, operator.truediv),
         Operation("^", 2, 3, False, operator.pow),
+        Operation("<", 2, 0, False, operator.lt),
+        Operation(">", 2, 0, False, operator.gt),
         Operation("sqrt", 1, 0, True, math.sqrt),
     ]
     opstring_list = [x.opstring for x in operator_list]
+    opstring_to_op = {x.opstring: x for x in operator_list}
 
-    def opstring_to_op(self, opstring: str):
-        return {x.opstring: x for x in ExpressionEval.operator_list}[opstring]
-    
     def tokenize_equation_str(self, equation_str: str) -> deque:
         """takes in an infix expression and tokenizes it, putting each token as a string in a deque. also places function names after their brackets, to make eval easier"""
         fn_reorder_stack = deque()
@@ -44,7 +44,7 @@ class ExpressionEval():
             if char == ")" and fn_reorder_stack[-1] == "(":
                 fn_reorder_stack.pop()
 
-            if char == "(" and cur_token in self.opstring_list and self.opstring_to_op(cur_token).is_function:
+            if char == "(" and cur_token in self.opstring_list and self.opstring_to_op[cur_token].is_function:
                 fn_reorder_stack.append(cur_token)
                 fn_reorder_stack.append("(")
                 cur_token = ""
@@ -94,9 +94,9 @@ class ExpressionEval():
                     postfix_queue.append(cur_op)
                 operator_stack.pop() # remove '('
 
-            elif item in ExpressionEval.opstring_list and not self.opstring_to_op(item).is_function:
+            elif item in ExpressionEval.opstring_list and not self.opstring_to_op[item].is_function:
                 # add ops to postfix until this "section" is complete (we find another equal level op)
-                while len(operator_stack) > 0 and operator_stack[-1] != '(' and self.opstring_to_op(item).priority <= self.opstring_to_op(operator_stack[-1]).priority:
+                while len(operator_stack) > 0 and operator_stack[-1] != '(' and self.opstring_to_op[item].priority <= self.opstring_to_op[operator_stack[-1]].priority:
                     cur_op = operator_stack.pop()
                     #print(cur_op)
                     postfix_queue.append(cur_op)
@@ -135,11 +135,11 @@ class ExpressionEval():
                 if len(value_stack) < 1: raise ValueError("bad input, tried to pop from an empty value_stack when evaluating")
 
                 operands = deque()
-                for _ in range(self.opstring_to_op(cur_token).operand_count):
+                for _ in range(self.opstring_to_op[cur_token].operand_count):
                     operands.appendleft(float(value_stack.pop()))
 
                 #print(self.opstring_to_op(cur_token).function.__name__)
-                result = self.opstring_to_op(cur_token).function(*list(operands))
+                result = float(self.opstring_to_op[cur_token].function(*list(operands)))
                 #print(f"operands: {operands}, operator: {cur_token}, result: {result}")
                 value_stack.append(result)
     
